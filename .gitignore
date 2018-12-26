@@ -11,3 +11,5 @@
 ###< symfony/web-server-bundle ###
 
 /custom*
+
+.DS_Store

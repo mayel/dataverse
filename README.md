@@ -9,6 +9,8 @@ You can use the Dockerfile to get started, especially for development.
 Create a directory called /custom/ at the base, and copy the /config/secrets.php to /custom/secrets.php and make appropriate edits.
 The database is not included in the Dockerfile. You can use MySQL (recommended), Postgres, or SQLite. The tables/schema will be created on the fly.
 
+Note: For the taxonomy, this option needs to be turned on in MySQL: https://dev.mysql.com/doc/refman/5.7/en/innodb-parameters.html#sysvar_innodb_large_prefix and also run `SET GLOBAL innodb_default_row_format=DYNAMIC;`
+
 ### What's the stack? ###
 
 * PHP7
