@@ -307,7 +307,7 @@ class Taxonomy extends App
         }
 
         if (!$limit_depth) {
-            $limit_depth = 2;
+            $limit_depth = 3;
         } //default
 
         if (!$separator) {

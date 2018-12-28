@@ -18,19 +18,19 @@ class TaxonomyImportWikibase extends Taxonomy
     /**
     * @Route("/import/wikibase/{item_id}", name="wikimport")
     */
-    public function import($item_id = 'Q1694') // better to run through command line
+    public function import($item_id = 'Q1701') // better to run through command line
     {
         global $bv;
 
-        // $item_ids = ['Q1694','Q1696','Q1695','Q1700','Q1701','Q1699', 'Q1698', 'Q1697']; // all
+        // $item_ids = [ 'Q1694','Q1698','Q1697','Q1699','Q1696','Q1695','Q1700','Q1701' ]; // all
 
         $this->top_link_to_tag_id = 2; // the top parent tag to add tags under
 
         $this->skip_until_item = false;
-        $this->skip_until_item = ["Q3144"=> 69472]; // wikid=>tag_id optional use to skip saving until a certain point
+        // $this->skip_until_item = ["Q3144"=> 69472]; // wikid=>tag_id optional use to skip saving until a certain point
         $this->skip_until_after_item = true; // whether to also skip the given item
 
-        $api_url = ($_GET && $_GET['api_url'] ? $_GET['api_url'] : 'https://wiki.haha.academy/api.php');
+        $api_url = ($_GET && $_GET['api_url'] ? $_GET['api_url'] : 'https://wiki.haha.academy:4433/api.php');
 
         // Wikibase API Setup
 
@@ -71,7 +71,8 @@ class TaxonomyImportWikibase extends Taxonomy
 
         $out = $this->wiki_item_get($item_id);
 
-        echo print_r($out); // display for debugging
+        echo "\r\rDONE with ".$item_id;
+        // echo print_r($out); // display for debugging
 
         exit();
     }
@@ -130,6 +131,7 @@ class TaxonomyImportWikibase extends Taxonomy
                     } else {
                         $this->import_log("ERROR: No tag ID for the relation!", $recurse);
                     }
+
                 } else {
                     // this is a sub-theme
 
@@ -183,14 +185,16 @@ class TaxonomyImportWikibase extends Taxonomy
                                     $this->import_log('Related to...', $recurse+1);
 
                                     $item_out->children[] = $this->wiki_item_get($sub_item_id, $recurse+1, $tag_id, 'related');
+
                                 } elseif ($property=='P10' || $property=='P6') {
                                     // Sub-theme, follow away!
 
                                     $this->import_log('Sub theme...', $recurse+1);
 
                                     $item_out->children[] = $this->wiki_item_get($sub_item_id, $recurse+1, $tag_id);
+
                                 } else {
-                                    exit("\r ERROR: Unknown property!");
+                                    $this->import_log('WARN: Unknown property '.$property, $recurse+1);
                                 }
                             }
                         }

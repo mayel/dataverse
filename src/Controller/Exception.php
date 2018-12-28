@@ -14,7 +14,11 @@ class Exception extends Controller
 //			echo $inc;
 			if(!file_exists($inc) || !require_once($inc)) $error = '404 Not Found';
 
-		} else $error = htmlentities($exception->getMessage())." / file: ".$exception->getFile() ." / line: ".$exception->getLine();
+		} 
+		
+		elseif($exception->getPrevious()->getCode()==23000) echo " Oops, it looks like that data was already saved! <p><small>".htmlentities($exception->getMessage());
+
+		else $error = htmlentities($exception->getMessage())." / file: ".$exception->getFile() ." / line: ".$exception->getLine();
 		
 		if($error) echo 'Oops, there was an error. Please send these details to the site admin: '.$error;
 
