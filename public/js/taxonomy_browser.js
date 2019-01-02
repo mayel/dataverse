@@ -18,7 +18,7 @@ var b = {
 	t: 10
 };
 
-var color = d3.scaleOrdinal(d3.schemeCategory20);
+var color = d3.scaleOrdinal(d3.schemeCategory10);
 
 // Total size of all segments; we set this later, after loading the data.
 var totalSize = 0;
@@ -63,11 +63,8 @@ var y = d3.scaleSqrt()
 //   createVisualization(json);
 // });
 
-d3.json(
-	json_url,
-	// "assets/flare.json", // for testing
-	function(error, root) {
-		if (error) console.log(error);
+d3.json( json_url ).then(
+	function(root) {
 		createVisualization(root);
 	}
 );
@@ -75,7 +72,8 @@ d3.json(
 $.fn.triggerSVGEvent = function(eventName) {
 	var event = document.createEvent('SVGEvents');
 	event.initEvent(eventName, true, true);
-	this[0].dispatchEvent(event);
+	// console.log(this);
+	if(this.length) this[0].dispatchEvent(event);
 	return $(this);
 };
 

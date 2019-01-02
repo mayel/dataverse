@@ -184,7 +184,7 @@ class Form extends Frontend
 
         //print_r($list_questions);
 
-        $date_time_include = '<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.20.1/moment.min.js"></script> <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/js/tempusdominus-bootstrap-4.min.js"></script> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.0.0-alpha14/css/tempusdominus-bootstrap-4.min.css" />';
+        $date_time_include = '<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.23.0/moment.min.js"></script> <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/js/tempusdominus-bootstrap-4.min.js"></script> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tempusdominus-bootstrap-4/5.1.2/css/tempusdominus-bootstrap-4.min.css" />';
 
         $form_builder = $this->createFormBuilder();
         // [
@@ -391,8 +391,8 @@ class Form extends Frontend
                 break;
             case "Phone":
 
-                $this->custom_scripts .= '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/9.0.14/css/intlTelInput.css" />
-				<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/9.0.14/js/intlTelInput.min.js"></script>';
+                $this->custom_scripts .= '<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/14.0.6/css/intlTelInput.css" />
+				<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/14.0.6/js/intlTelInput.min.js"></script>';
 
                 //$this->attr['class'] .= ' ';
 
@@ -483,7 +483,7 @@ class Form extends Frontend
                 break;
             case "Password":
 
-                $this->custom_scripts .= '<script src="https://cdnjs.cloudflare.com/ajax/libs/hideshowpassword/2.0.10/hideShowPassword.min.js"></script><link rel="stylesheet" href="/css/pw.wink.css">';
+                $this->custom_scripts .= '<script src="https://cdnjs.cloudflare.com/ajax/libs/hideshowpassword/2.1.1/hideShowPassword.min.js"></script><link rel="stylesheet" href="/css/pw.wink.css">';
 
                 $form_builder->add($this->field_name, PasswordType::class, $this->field_params([
                       //'placeholder' => 'Choose a password',
@@ -726,7 +726,7 @@ class Form extends Frontend
         //		]);
 
         if (isset($_GET['embedded'])) {
-            $this->custom_scripts .= '<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.5.15/iframeResizer.contentWindow.min.js"></script>';
+            $this->custom_scripts .= '<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/3.6.3/iframeResizer.contentWindow.min.js"></script>';
         }
 
         $form = $form_builder->getForm();

@@ -6,13 +6,14 @@ if (!$tag_default) {
     $tag_default = 1;
 }
 ?>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.2.1/css/bootstrap.min.css"/>
 
-<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.0/js/select2.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.1/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.1/js/select2.min.js"></script>
 
-<script src="/js/d3.v4.min.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
 <link rel="stylesheet" type="text/css" href="/css/sequences.css" />
 
 
@@ -68,4 +69,4 @@ var json_url = "/taxonomy/<?=($_GET['taxonomy_id'] ? intval($_GET['taxonomy_id']
 
 </script>
 <script type="text/javascript" src="/js/taxonomies.js?v1.1"></script>
-<script type="text/javascript" src="/js/taxonomy_browser.js?v1.1"></script>
+<script type="text/javascript" src="/js/taxonomy_browser.js?v1.2"></script>
