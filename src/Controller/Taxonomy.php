@@ -123,10 +123,12 @@ class Taxonomy extends App
         $tag1 = $this->tag_load($tag1);
         $tag2 = $this->tag_load($tag2);
 
-        $tag1->sharedTagList[] = $tag2;
+        if(($tag1 && $tag1->id && $tag2 && $tag2->id) && ($tag1->id != $tag2->id)){
 
-        return R::store($tag1);
+            $tag1->sharedTagList[] = $tag2;
 
+            return R::store($tag1);
+        }
     }
 
     public function tag_hide($tag_id)
