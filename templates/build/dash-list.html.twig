@@ -2,7 +2,6 @@
 
 {% block content %}
 
-{% include 'build/q_nav.html.twig' with {'questionnaires_list': questionnaires_list, 'q_nav_url': '/admin/responses/'} %}
 
   <div class="row justify-content-md-center">
     <div class="col col-md-6">
@@ -13,17 +12,13 @@
         <a href="/build/questionnaire?new" class="btn btn-info">New Questionnaire</a>
       </p>
 
-      <h3>{{'Edit Questionnaires'|e}}</h3>
-      <ul class="clearfix">
-        {% for v in questionnaires_list %}
-          <li>
-            <a href="/build/questionnaire?id={{ v.id|e }}">
-              {{ v.questionnaire_title|e }}
-            </a>
+      {% include 'build/q_nav.html.twig' with {'questionnaires_list': questionnaires_list, 'q_nav_url': '/admin/responses/'} %}
 
-          </li>
-        {% endfor %}
-      </ul>
+      {% include 'build/q_nav.html.twig' with {'questionnaires_list': questionnaires_list, 'q_nav_url': '/q/', 'q_nav_title' : 'View Questionnaire'} %}
+
+      {% include 'build/q_nav.html.twig' with {'questionnaires_list': questionnaires_list, 'q_nav_url': '/build/questionnaire?id=', 'q_nav_title' : 'Edit Questionnaire'} %}
+
+
 
     </div>
   </div>

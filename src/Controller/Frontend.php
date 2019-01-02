@@ -336,7 +336,13 @@ class Frontend extends App
 
     public function questionnaire_get($id)
     {
-        return $this->data_by_id('questionnaire', $id);
+        if(is_numeric($id)) $q = $this->data_by_id('questionnaire', $id); // try by ID
+
+        if(!$q) $q = R::findOne('questionnaire', ' questionnaire_name = ? ', [ $id ]); // try by name
+
+        $this->questionnaire_id = $q->id; // override name as ID
+
+        return $q;
     }
 
     public function questionnaire_questions($id)
@@ -398,7 +404,7 @@ class Frontend extends App
 
     public function questionnaire_step($step)
     {
-        return R::find('step', 'questionnaire_id = ? AND step = ? ORDER BY step_order ASC', [ intval($this->questionnaire->id), $step]);
+        return R::find('step', 'questionnaire_id = ? AND step >= ? ORDER BY step_order ASC', [ intval($this->questionnaire->id), $step]);
     }
 
     public function questionnaire_next_step($step)

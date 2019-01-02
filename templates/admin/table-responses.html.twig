@@ -3,6 +3,8 @@
 
 {% include 'build/q_nav.html.twig' with {'current_id': questionnaire_id, 'questionnaires_list': questionnaires_list, 'q_nav_url': '/admin/responses/'} %}
 
+<a href="/q/{{questionnaire_name}}" class="btn btn-info pull-right">View related form</a>
+
 <h3>{{questionnaire_tile}}:
 {% if items is iterable and items|length %}
 {{items.getTotalItemCount }}

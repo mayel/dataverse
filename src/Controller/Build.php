@@ -177,7 +177,7 @@ class Build extends Backend
 				';
                 }
 
-                $this->session->set('num_steps', count($choices));
+                if($choices) $this->session->set('num_steps', count($choices));
             }
         }
 

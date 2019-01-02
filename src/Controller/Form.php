@@ -78,8 +78,10 @@ class Form extends Frontend
         }
 
         if (!$this->questionnaire->id && !$_GET['id']) {
-            exit('which questionnaire are you trying to answer?');
+            exit('Which questionnaire are you trying to answer?');
         }
+
+        // $this->questionnaire_id = $this->questionnaire->id;
 
         $this->respondent_id = $this->session->get('respondent:'.$this->questionnaire->id);
 
@@ -124,7 +126,12 @@ class Form extends Frontend
         } else { // forward
 
             if (is_numeric($_GET['after'])) {
-                $this->current_step = $_GET['after']+1;
+                
+                $next_step = $this->questionnaire_next_step($_GET['after']);
+
+                if($next_step && $next_step->id) $this->current_step = $next_step->id;
+                else $this->current_step = $_GET['after']+1;
+
             } elseif (is_numeric($_GET['before'])) {
                 $this->current_step = $_GET['before']-1;
             } else {
@@ -140,14 +147,15 @@ class Form extends Frontend
 
             $steps = $this->questionnaire_step($this->current_step);
 
+            // var_dump($this->current_step, $this->questionnaire->id, $steps);
+
             foreach ($steps as $s) {
-                // var_dump($s, $s->question);
                 $s->question->step = $s->step;
                 $this->questions[] = $s->question;
             }
         }
 
-        if (!count($this->questions)) {
+        if (!$this->questions || !count($this->questions)) {
             // $this->questions = $this->questionnaire_questions($this->questionnaire->id); // fallback to load all questions
             // return $this->redirect('/thankyou');
 
@@ -158,7 +166,7 @@ class Form extends Frontend
                 $back_label = 'Review my answers';
             }
 
-            return $this->render('form/thankyou.html.twig', ['back_link'=>'/q?step=1', 'back_label'=>$back_label]);
+            return $this->render('form/thankyou.html.twig', ['back_link'=>'/q/'.$this->questionnaire_id.'?step=1', 'back_label'=>$back_label]);
         }
 
         // if(isset($_GET['after']) || !$this->question_id){ // forward

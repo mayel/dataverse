@@ -36,12 +36,12 @@ if (!$tag_default) {
 	<div id="knowledge_sidebar">
 
     <p class="taxonomy_edit">
-      <a class="btn btn-warning btn-sm" href="#" onclick="return tag_go('/q/4?step=1')">Rename</a>
-			<a class="btn btn-warning btn-sm" href="#" onclick="return tag_go('/q/5?step=1')">Move</a>
-			<a class="btn btn-warning btn-sm" href="#" onclick="return tag_go('/q/7?step=1')">Merge with another tag</a>
-			<a class="btn btn-danger btn-sm" href="#" onclick="return tag_go('/q/6?step=1')">Delete</a>
-			<p><a class="btn btn-info btn-sm" href="#" onclick="return tag_go('/q/3?step=1')">Add a tag as sub-category</a>
-      <a class="btn btn-info btn-sm" href="#" onclick="return tag_go('/q/9?step=1')">Link with a related tag</a>
+      <a class="btn btn-warning btn-sm" href="#" onclick="return tag_go('/q/tag_rename?step=1')">Rename</a>
+			<a class="btn btn-warning btn-sm" href="#" onclick="return tag_go('/q/tag_move?step=1')">Move</a>
+			<a class="btn btn-warning btn-sm" href="#" onclick="return tag_go('/q/tags_merge?step=1')">Merge with another tag</a>
+			<a class="btn btn-danger btn-sm" href="#" onclick="return tag_go('/q/tag_delete?step=1')">Delete</a>
+			<p><a class="btn btn-info btn-sm" href="#" onclick="return tag_go('/q/tag_add?step=1')">Add a tag as sub-category</a>
+      <a class="btn btn-info btn-sm" href="#" onclick="return tag_go('/q/tags_relation?step=1')">Link with a related tag</a>
     </p>
 
 		<div id="knowledge_legend"></div>

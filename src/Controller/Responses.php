@@ -192,8 +192,9 @@ class Responses extends Admin
         }
 
         $this->questionnaire = $this->questionnaire_get($questionnaire_id);
+        // var_dump($questionnaire_id, $this->questionnaire->id, $this->questionnaire);
 
-        $questions = $this->questionnaire_questions($questionnaire_id); // load all questions
+        $questions = $this->questionnaire_questions($this->questionnaire->id); // load all questions
 
         foreach ($questions as $q) {
             if ($q->answer_type=='Email') {
@@ -214,7 +215,7 @@ class Responses extends Admin
             $this->questions[$q->id] = $q;
         }
 
-        $responses = $this->responses_browse($questionnaire_id, $page, $sort_by, $sorting, $has_email_field, $include_personal_info);
+        $responses = $this->responses_browse($this->questionnaire->id, $page, $sort_by, $sorting, $has_email_field, $include_personal_info);
 
         $questionnaires_list = $this->questionnaires();
 
@@ -222,14 +223,15 @@ class Responses extends Admin
       'cols' => $this->questions,
       'items' => $responses,
       'pagination' => $this->pagination,
-      'questionnaire_id' => $questionnaire_id,
+      'questionnaire_id' => $this->questionnaire->id,
+      'questionnaire_name' => $this->questionnaire->questionnaire_name,
       'questionnaire_tile' => $this->questionnaire->questionnaire_title,
       'questionnaires_list' => $questionnaires_list
       ));
     }
 
     /**
-    * @Route("/admin/responses/{questionnaire_id}/{page}/{sort_by}/{sorting}", name="admin_responses", requirements={"questionnaire_id"="\d+", "page"="\d+", "sort_by": "[a-zA-Z0-9_]+", "sorting": "asc|desc"})
+    * @Route("/admin/responses/{questionnaire_id}/{page}/{sort_by}/{sorting}", name="admin_responses", requirements={"questionnaire_id"="\w+", "page"="\d+", "sort_by": "[a-zA-Z0-9_]+", "sorting": "asc|desc"})
     */
     public function admin_responses($questionnaire_id = 1, $page = 1, $sort_by = 'ts_started', $sorting = 'desc')
     {
