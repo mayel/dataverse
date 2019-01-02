@@ -142,9 +142,9 @@ class TaxonomyAPI extends Taxonomy
         $e = $this->tag_edit($tag_id, $_REQUEST);
 
         if ($_REQUEST['format']=='redirect') {
-            header("Location: /taxonomies?toast=Tag moved!&tag_id=".$tag_id);
+            header("Location: /taxonomies?toast=Tag edited!&tag_id=".$tag_id);
         } else {
-            return $this->json("Moved");
+            return $this->json("Edited");
         }
     }
 

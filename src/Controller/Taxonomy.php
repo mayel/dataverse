@@ -74,13 +74,35 @@ class Taxonomy extends App
         return $meta;
     }
 
+    public function tag_load($tag){
+
+        if (is_numeric($tag)) { // in case we're getting a tag ID instead of a bean
+
+            $tag = $this->tag_by_id($tag);
+        }
+
+        if (!$tag) {
+
+            exit('You need to indicate a tag'); // TODO: better error handling
+
+        } 
+
+        return $tag;
+    }
+
+    public function tag_by_id($tag_id)
+    {
+        
+        $tag = R::load('tag', $tag_id);
+        // $tag = $tag->export();
+
+        return $tag;
+    }
+
     public function meta_add_to_tag($tag, $type, $subtype=null, $val)
     {
-        if (!$tag) {
-            return exit('You need to indicate what tag');
-        } elseif (is_numeric($tag)) {
-            $tag = R::load('tag', $tag);
-        }
+
+        $tag = $this->tag_load($tag);
 
         $meta = R::dispense('meta');
 
@@ -95,6 +117,17 @@ class Taxonomy extends App
         return $meta_id;
     }
 
+    public function tag_related_link($tag1, $tag2)
+    {
+
+        $tag1 = $this->tag_load($tag1);
+        $tag2 = $this->tag_load($tag2);
+
+        $tag1->sharedTagList[] = $tag2;
+
+        return R::store($tag1);
+
+    }
 
     public function tag_hide($tag_id)
     {
@@ -128,10 +161,11 @@ class Taxonomy extends App
         exit("\n!! Mismatch with tag_search_with_parent($value, $parent)\n");
     }
 
-    public function tag_meta_by_id($tag_id)
+    public function tag_meta($tag)
     {
-        $tag = $this->tag_by_id($tag_id);
+        $tag = $this->tag_load($tag);
         $tagArray = $tag->export();
+
         $metas = $tag->sharedMetaList;
         foreach ($metas as $m) {
             if ($m->meta_detail) {
@@ -141,21 +175,19 @@ class Taxonomy extends App
             }
         }
 
+        $related_tags = $tag->sharedTag;
+        // print_r($related_tags);
+        foreach ($related_tags as $t) {
+            $tagArray['meta']["Related"][$t->id] = $t->label;
+        }
+
         return $tagArray;
-    }
-
-    public function tag_by_id($tag_id)
-    {
-        $tag = R::load('tag', $tag_id);
-        // $tag = $tag->export();
-
-        return $tag;
     }
 
     public function tags_by_meta($type=null, $detail=null, $data=null, $return_as_bean=false)
     {
 
-      // var_dump($type, $detail, $data);
+        // var_dump($type, $detail, $data);
         // exit();
         $result = [];
 
@@ -199,7 +231,7 @@ class Taxonomy extends App
         $datas = $this->tags_by_meta($type, $detail, $data);
 
         $datas = current($datas)['tags']; // only 1 meta
-      $datas = (object) current($datas); // only 1 tag
+        $datas = (object) current($datas); // only 1 tag
 
       return $datas;
     }
@@ -338,7 +370,7 @@ class Taxonomy extends App
             $tag_tree = $this->tree_deflatten($tag_tree);
         // echo '<pre>'; print_r($tag_tree); exit();
         } else {
-            $tag_tree = $this->tag_meta_by_id($parent_id);
+            $tag_tree = $this->tag_meta($parent_id);
         }
 
         return ($tag_tree);
@@ -401,18 +433,22 @@ class Taxonomy extends App
         return $str;
     }
 
-    public function tag_edit($tag_id, $update=[])
+    public function tag_edit($tag, $update=[])
     {
         // R::fancyDebug(true);
 
-        $tag = $this->tag_by_id($tag_id);
+        $tag = $this->tag_load($tag);
 
-        if ($update['label']) {
+        if ($update['label']) { // rename
             $tag->label = strip_tags($update['label']);
         }
 
-        if ($update['parent_tag']) {
+        if ($update['parent_tag']) { // moved
             $tag->parent_id = (int) $update['parent_tag'];
+        }
+
+        if ($update['related_tag']) { // moved
+            $this->tag_related_link($tag, $update['related_tag']);
         }
 
         R::store($tag);

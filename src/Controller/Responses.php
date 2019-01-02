@@ -59,6 +59,9 @@ class Responses extends Admin
         }
 
         if ($this->the_response_tag_id) {
+
+            // echo $this->questionnaire->questionnaire_name." - ".$r->question->question_name;
+
             if ($r->question->question_name=='tag_new_label') { // new tag
                 $the_response .= $this->response_action_button("/taxonomy/tag/". $this->the_response_tag_id ."/new?format=redirect&label=". urlencode($the_response));
             }
@@ -67,8 +70,19 @@ class Responses extends Admin
 
                 if ($this->move_from_tag) {
                     $the_response .= $this->response_action_button("/taxonomy/tag/". $this->move_from_tag ."/edit?parent_tag=". $this->the_response_tag_id ."&format=redirect", 'warning');
+                    $this->move_from_tag = false;
                 } else {
                     $this->move_from_tag = $this->the_response_tag_id;
+                }
+            }
+
+            if ($this->questionnaire->questionnaire_name=='tags_relation') { // delete tag
+
+                if ($this->link_tag_1) {
+                    $the_response .= $this->response_action_button("/taxonomy/tag/". $this->link_tag_1 ."/edit?related_tag=". $this->the_response_tag_id ."&format=redirect", 'warning');
+                    $this->link_tag_1 = false;
+                } else {
+                    $this->link_tag_1 = $this->the_response_tag_id;
                 }
             }
 
@@ -79,6 +93,7 @@ class Responses extends Admin
             if ($this->questionnaire->questionnaire_name=='tag_delete') { // delete tag
                 $the_response .= $this->response_action_button("/taxonomy/tag/". $this->the_response_tag_id ."/delete?format=redirect", 'danger');
             }
+
         }
 
         // $the_response .= " // A: ".$this->the_response_tag_id." T: ".$r->question->answer_type." N: ".$this->questionnaire->questionnaire_name." ID: ".$this->the_response_tag_id." Q: ".$r->question->question_name;

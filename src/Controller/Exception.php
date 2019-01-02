@@ -16,7 +16,7 @@ class Exception extends Controller
 
 		} 
 		
-		elseif($exception->getPrevious()->getCode()==23000) echo " Oops, it looks like that data was already saved! <p><small>".htmlentities($exception->getMessage());
+		elseif($exception->getPrevious() && $exception->getPrevious()->getCode()==23000) echo " Oops, it looks like that data was already saved! <p><small>".htmlentities($exception->getMessage());
 
 		else $error = htmlentities($exception->getMessage())." / file: ".$exception->getFile() ." / line: ".$exception->getLine();
 		

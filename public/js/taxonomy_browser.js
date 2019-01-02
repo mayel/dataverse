@@ -240,6 +240,7 @@ function kp_mouseover(d) {
 
 	if (!selecting_related) updateBreadcrumbs(sequenceArray);
 
+
 	// load and display meta data
 	$.getJSON("/taxonomy/tag/" + active_tag_id + "?output=meta&format=json", function(data) {
 		var items = [];
@@ -247,7 +248,8 @@ function kp_mouseover(d) {
 		$.each(data.meta, function(key, val) {
 			if (typeof val === 'object') {
 				$.each(val, function(key2, val2) {
-					items.push("<li class='meta-" + key + "'>" + key + " (" + key2 + "): " + val2 + "</li>");
+					if(key !="Related") items.push("<li class='meta-" + key + "'>" + key + " (" + key2 + "): " + val2 + "</li>");
+					else items.push("<li class='meta-" + key + "'>" + key + ": <a href='?tag_id=" + key2 + "&tag_label=" + val2 + "'>" + val2 + "</a></li>");
 				});
 			} else {
 				items.push("<li class='meta-" + key + "'>" + key + ": " + val + "</li>");
