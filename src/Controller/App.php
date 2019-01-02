@@ -246,7 +246,13 @@ class App extends Controller
     {
         $this->user_token = $_GET['token'] ? $_GET['token'] : $this->session->get('user_token'); // get from session
 
-        if ($this->user_token !=$this->conf->{$token_type}) {
+        // var_dump($this->user_token, $this->conf->{$token_type});
+
+        if(!$this->conf->{$token_type}) $token_type = 'admin_token'; // fallback to admin if specific token not configured
+
+        if(!$this->conf->{$token_type}) exit("Auth token ($token_type) not configured!");
+
+        elseif ($this->user_token !=$this->conf->{$token_type}) {
             if ($blocking) {
                 exit("Unauthorized!");
             } // no good

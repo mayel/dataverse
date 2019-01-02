@@ -13,6 +13,8 @@ class Admin extends Backend
   */
     public function admin_dash()
     {
+        $this->admin_auth();
+        
         $questionnaires_list = $this->questionnaires();
 
         return $this->render('admin/index.html.twig', array(
