@@ -11,20 +11,21 @@ ini_set("memory_limit", "2048M");
 //ignore_user_abort(true);
 
 class TaxonomyImportWikibase extends Taxonomy
+
 // TEMPORARY: used to import taxonomy data from a wikibase site like wikidata.org
 // it is recommend to run via command line: php bin/console import:wiki --no-debug
 {
 
-    /**
-    * @Route("/import/wikibase/{item_id}", name="wikimport")
-    */
-    public function import($item_id = 'Q1701') // better to run through command line
+    public function import() 
     {
         global $bv;
 
         // $item_ids = [ 'Q1694','Q1698','Q1697','Q1699','Q1696','Q1695','Q1700','Q1701' ]; // all
 
-        $this->top_link_to_tag_id = 2; // the top parent tag to add tags under
+        // $item_id = 'Q7889'; // which item to import - if not set will try to iterate through all items
+
+        // $this->top_link_to_tag_id = 2; // the top parent tag to add tags under
+        // $this->top_link_to_tag_id = 77335; // override parent cat
 
         $this->skip_until_item = false;
         // $this->skip_until_item = ["Q3144"=> 69472]; // wikid=>tag_id optional use to skip saving until a certain point
@@ -69,16 +70,27 @@ class TaxonomyImportWikibase extends Taxonomy
         // $bv->termLookup = getEntityRetrievingTermLookup
         // $entityRedirectLookup = $bv->wbFactory->newEntityRedirectLookup();
 
-        $out = $this->wiki_item_get($item_id);
+        if(isset($item_id) && $item_id) {
 
-        echo "\r\rDONE with ".$item_id;
+            $out = $this->wiki_item_get($item_id);
+            $this->import_log("DONE with $item_id");
+
+        } else {
+            for($i=8285 ; $i < 8299 ; $i++ ){
+                // $i = 1654;
+                $out[] = $this->wiki_item_get("Q".$i, 0);
+                $this->import_log("DONE with Q".$i);
+            }
+        }
+
+        
         // echo print_r($out); // display for debugging
 
         exit();
     }
 
     public function wiki_item_get($item_id, $recurse = 1, $previous_tag_id = false, $previous_as = 'parent')
-    { // set $recurse=false to only get the element (not the statements)
+    { // set $recurse=0 to only get the element (not the statements)
         global $bv;
 
         try {
@@ -103,7 +115,7 @@ class TaxonomyImportWikibase extends Taxonomy
                     $this->import_log($enLabel, $recurse);
                     $entry['name'] = trim($enLabel);
                 } else {
-                    exit(" ERROR!! NO LABEL ");
+                    $this->import_log('ERROR! NO LABEL ', $recurse);
                 }
 
                 $enDescription = $bv->termLookup->getDescription($wb_item_id, 'en');
@@ -136,7 +148,9 @@ class TaxonomyImportWikibase extends Taxonomy
                     // this is a sub-theme
 
                     if ($this->skip_until_item) {
+
                         if (isset($this->skip_until_item[$item_out->id])) {
+
                             if ($this->skip_until_after_item) {
                                 $tag_id = $this->skip_until_item[$item_out->id];
                             } else {
@@ -145,20 +159,37 @@ class TaxonomyImportWikibase extends Taxonomy
 
                             $this->skip_until_item = false; // stop skipping
                         }
-                    } elseif (!$previous_tag_id) {
+
+                    } elseif ( !$previous_tag_id && isset($this->top_link_to_tag_id) && $this->top_link_to_tag_id ) {
+
                         $previous_tag_id = $this->top_link_to_tag_id;
                     }
 
-                    if ($previous_tag_id) {
+                    if ($previous_tag_id) { // add as child tag
+
                         $entry['parent_tag_id'] = $previous_tag_id;
 
                         // save tag in DB
                         $item_out->tag_id = $tag_id = $this->wb_add_tag($entry, $recurse);
+
                     } else {
-                        $this->import_log("WARN: No previous tag ID for the parent, so could not save tag!", $recurse);
+
+                        $tag_exists = $this->tags_by_meta("Code", "HAWB", $entry['wikid'], true); // check if tag already exists
+
+                        if($tag_exists && $tag_exists->id){
+
+                            $tag_id = $tag_exists->id;
+                            $this->import_log("OK - Tag already exists: http://dataverse.local/taxonomies?tag_id=".$tag_id, $recurse);
+                            
+                        } else {
+                            $this->import_log("WARN: Tag does not exist & we have no parent tag ID, so could not save tag...", $recurse);
+
+                            $check_parent_and_add_tag = true; // need to check the 'Subtheme of' property
+                        }
                     }
 
-                    if ($recurse && !in_array($item_id, $bv->ids_already_followed)) { // follow down the tree
+
+                    if (($recurse || isset($check_parent_and_add_tag)) && !in_array($item_id, $bv->ids_already_followed)) { // follow down the tree
 
                         $bv->ids_already_followed[] = $item_id;
 
@@ -168,30 +199,52 @@ class TaxonomyImportWikibase extends Taxonomy
                             // print_r($statement);
                             $snack= $statement->getMainSnak();
                             // print_r($snack);
+
                             $property= $snack->getPropertyId();
                             $this->import_log($property.' (property)', $recurse);
 
-                            if ($property !='P11') { // P11 on the HAHA wiki means "Subtheme of" - ignore
-                                $sub_item= $snack->getDataValue();
-                                // print_r($sub_item);
+                            $sub_item= $snack->getDataValue();
+                            // print_r($sub_item);
 
-                                $sub_item_id = (string) $sub_item->getEntityId();
+                            $ref_item_id = (string) $sub_item->getEntityId();
+                            $this->import_log($ref_item_id.' (item referenced)', $recurse+1);
 
-                                $this->import_log($sub_item_id.' (item referenced)', $recurse+1);
 
-                                if ($property=='P15') {
-                                    // P15 means 'Related to' - don't follow further, but save as reference
+                            if(isset($check_parent_and_add_tag) && $property=='P11'){ // P11 on the HAHA wiki means "Subtheme of"
+
+                                $parent_tag_exists = $this->tags_by_meta("Code", "HAWB", $ref_item_id, true); // check if parent tag exists 
+
+                                if($parent_tag_exists && $parent_tag_exists->id){
+
+                                    $entry['parent_tag_id'] = $previous_tag_id = $parent_tag_exists->id;
+
+                                    $this->import_log("Cool - Parent tag found: http://dataverse.local/taxonomies?tag_id=".$previous_tag_id, $recurse);
+
+                                    // save tag in DB
+                                    $item_out->tag_id = $tag_id = $this->wb_add_tag($entry, $recurse);
+                                    
+                                    
+                                } else {
+                                    $this->import_log("ERROR: Could not find parent tag, so could not save tag!", $recurse);
+
+                                    system('notify-send "Import script" "Something went wrong"');
+                                    exit("TODO");
+        
+                                }
+
+                            } elseif ($recurse && $property !='P11') { // ignore "Subtheme of" and continue traversing the tree from the top
+
+                                if ($property=='P15') { // P15 means 'Related to' - don't follow further, but save as reference
 
                                     $this->import_log('Related to...', $recurse+1);
 
-                                    $item_out->children[] = $this->wiki_item_get($sub_item_id, $recurse+1, $tag_id, 'related');
+                                    $item_out->children[] = $this->wiki_item_get($ref_item_id, $recurse+1, $tag_id, 'related');
 
-                                } elseif ($property=='P10' || $property=='P6') {
-                                    // Sub-theme, follow away!
+                                } elseif ($property=='P10' || $property=='P6' || $property=='P7') { // Sub-theme, follow away!
 
                                     $this->import_log('Sub theme...', $recurse+1);
 
-                                    $item_out->children[] = $this->wiki_item_get($sub_item_id, $recurse+1, $tag_id);
+                                    $item_out->children[] = $this->wiki_item_get($ref_item_id, $recurse+1, $tag_id);
 
                                 } else {
                                     $this->import_log('WARN: Unknown property '.$property, $recurse+1);
@@ -226,6 +279,7 @@ class TaxonomyImportWikibase extends Taxonomy
         echo $s;
         echo "
 ";
+        // echo "\x07";
     }
 
     public function wb_add_tag($entry, $recurse=0, $mock_run = false)
