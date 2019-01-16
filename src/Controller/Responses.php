@@ -185,49 +185,55 @@ class Responses extends Admin
     /**
     * @Route("/responses/{questionnaire_id}/{page}/{sort_by}/{sorting}", name="list_responses", requirements={"questionnaire_id"="\w+", "page"="\d+", "sort_by": "[a-zA-Z0-9_]+", "sorting": "asc|desc"})
     */
-    public function list_responses($questionnaire_id = 1, $page = 1, $sort_by = 'ts_started', $sorting = 'desc', $include_personal_info=false)
+    public function list_responses($questionnaire_id = 1, $page = 1, $sort_by = 'ts_started', $sorting = 'desc', $include_personal_info=false, $include_q_selector=false)
     {
         if (!$this->member_auth(false) && !$this->admin_auth(false)) {
             $this->questionnaire_auth($questionnaire_id, true);
         }
 
+        $questionnaires_list = $this->questions = $responses = [];
+
         $this->questionnaire = $this->questionnaire_get($questionnaire_id);
         // var_dump($questionnaire_id, $this->questionnaire->id, $this->questionnaire);
 
-        $questions = $this->questionnaire_questions($this->questionnaire->id); // load all questions
+        if($this->questionnaire && $this->questionnaire->id){
+            
+            $questions = $this->questionnaire_questions($this->questionnaire->id); // load all questions
 
-        foreach ($questions as $q) {
-            if ($q->answer_type=='Email') {
-                $has_email_field = true;
+            foreach ($questions as $q) {
+                if ($q->answer_type=='Email') {
+                    $has_email_field = true;
+                }
+
+                if ($q->answer_type=='Include') {
+                    @include_once($this->conf->base_path.'public_pages/'.$q->question_name);
+                }
+
+                if (in_array($q->answer_type, ['Notice','Include','Password'])) {
+                    continue;
+                }
+                if (!$include_personal_info && in_array($q->answer_type, ['Email','Phone'])) {
+                    continue;
+                }
+
+                $this->questions[$q->id] = $q;
             }
 
-            if ($q->answer_type=='Include') {
-                @include_once($this->conf->base_path.'public_pages/'.$q->question_name);
-            }
+            $responses = $this->responses_browse($this->questionnaire->id, $page, $sort_by, $sorting, $has_email_field, $include_personal_info);
 
-            if (in_array($q->answer_type, ['Notice','Include','Password'])) {
-                continue;
-            }
-            if (!$include_personal_info && in_array($q->answer_type, ['Email','Phone'])) {
-                continue;
-            }
-
-            $this->questions[$q->id] = $q;
         }
 
-        $responses = $this->responses_browse($this->questionnaire->id, $page, $sort_by, $sorting, $has_email_field, $include_personal_info);
-
-        $questionnaires_list = $this->questionnaires();
+        if($include_q_selector) $questionnaires_list = $this->questionnaires();
 
         return $this->render('admin/table-responses.html.twig', array(
-      'cols' => $this->questions,
-      'items' => $responses,
-      'pagination' => $this->pagination,
-      'questionnaire_id' => $this->questionnaire->id,
-      'questionnaire_name' => $this->questionnaire->questionnaire_name,
-      'questionnaire_tile' => $this->questionnaire->questionnaire_title,
-      'questionnaires_list' => $questionnaires_list
-      ));
+            'cols' => $this->questions,
+            'items' => $responses,
+            'pagination' => $this->pagination,
+            'questionnaire_id' => $this->questionnaire->id,
+            'questionnaire_name' => $this->questionnaire->questionnaire_name,
+            'questionnaire_tile' => $this->questionnaire->questionnaire_title,
+            'questionnaires_list' => $questionnaires_list
+        ));
     }
 
     /**
@@ -235,6 +241,6 @@ class Responses extends Admin
     */
     public function admin_responses($questionnaire_id = 1, $page = 1, $sort_by = 'ts_started', $sorting = 'desc')
     {
-        return $this->list_responses($questionnaire_id, $page, $sort_by, $sorting, true);
+        return $this->list_responses($questionnaire_id, $page, $sort_by, $sorting, true, true);
     }
 }
