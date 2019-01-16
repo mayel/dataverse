@@ -54,7 +54,7 @@ class Responses extends Admin
             $the_tag = $tx->tag_name_with_ancestors($this->the_response_tag_id, $seperator=' ≫ ');
 
             if ($the_tag) {
-                $the_response = "<a class='question-".$r->question->question_name."' href='/needs?tag_id=$this->the_response_tag_id' target='_blank'>$the_tag</a>";
+                $the_response = "<a class='question-".$r->question->question_name."' href='/taxonomies?tag_id=$this->the_response_tag_id' target='_blank'>$the_tag</a>";
             }
         }
 
@@ -183,7 +183,7 @@ class Responses extends Admin
     }
 
     /**
-    * @Route("/responses/{questionnaire_id}/{page}/{sort_by}/{sorting}", name="list_responses", requirements={"questionnaire_id"="\d+", "page"="\d+", "sort_by": "[a-zA-Z0-9_]+", "sorting": "asc|desc"})
+    * @Route("/responses/{questionnaire_id}/{page}/{sort_by}/{sorting}", name="list_responses", requirements={"questionnaire_id"="\w+", "page"="\d+", "sort_by": "[a-zA-Z0-9_]+", "sorting": "asc|desc"})
     */
     public function list_responses($questionnaire_id = 1, $page = 1, $sort_by = 'ts_started', $sorting = 'desc', $include_personal_info=false)
     {
