@@ -66,26 +66,6 @@ class TaxonomyAPI extends Taxonomy
         $term   = $_GET['q'] ? $_GET['q'] : $_GET['term'];
         $via   = $_GET['via'];
 
-        $ret = new class {
-        };
-
-        $results = R::getAll(
-            "select id, label as label
-        from tag
-        where label like concat('%', :search, '%')
-        order by
-          label like concat(:search, '%') desc, -- starts with
-          label like concat('% ', :search) desc, -- full word at end
-          ifnull(nullif(instr(label, concat(' ', :search, ' ')), 0), 99999), -- full word
-          ifnull(nullif(instr(label, concat(', ', :search)), 0), 99999), -- after a comma
-          ifnull(nullif(instr(label, concat('/ ', :search)), 0), 99999), -- after an OR
-          ifnull(nullif(instr(label, concat('& ', :search)), 0), 99999), -- after an AND
-          label
-        LIMIT 30
-          ",
-        [':search' => $term]
-    );
-
         if (!$separator) {
             $separator = $_REQUEST['separator'];
         }
@@ -94,20 +74,40 @@ class TaxonomyAPI extends Taxonomy
             $separator = '≫';
         }
 
-        foreach ($results as $r) {
-            // var_dump($r);
-            $r = (object) $r;
-            $ancestors_str = $this->tag_name_with_ancestors($r->id, $separator, $under_tag);
-            if ($ancestors_str) {
-                $r->text = $ancestors_str;
-            } else {
-                $r->text = $r->label;
-            }
-            $ret->results[] = $r;
-        }
+        $limit = 50;
+
+        $this->tag_search_return = new class {};
+
+        $this->tag_search_prepare($term, $limit, $page, $separator, $under_tag);
 
         header("Access-Control-Allow-Origin: *");
-        return $this->json($ret);
+        return $this->json($this->tag_search_return);
+    }
+
+    public function tag_search_prepare($term, $limit, $page, $separator, $under_tag){
+
+        $results = $this->search_tags($term, $limit, $page);
+
+        foreach ($results as $r) {
+            // var_dump($r, $under_tag);
+            $r = (object) $r;
+
+            $ancestors_str = $this->tag_name_with_ancestors($r->id, $separator, $under_tag);
+
+            if ($ancestors_str) { // have breadcrumb
+                $r->text = $ancestors_str;
+                $this->tag_search_return->results[] = $r;
+            } else { // is not a child of under_tag
+                // $r->text = $r->label;
+                // $this->tag_search_return->results[] = $r;
+            }
+
+        }
+
+        if(count($results)==50 && count($this->tag_search_return->results)<45 && $page<10){ // too many were culled, search for some more
+            $this->tag_search_prepare($term, $limit, $page+1, $separator, $under_tag);
+        }
+
     }
 
     /**

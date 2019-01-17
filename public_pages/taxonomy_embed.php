@@ -1,10 +1,13 @@
 <?php
 if (!$taxonomy_default) {
-    $taxonomy_default = 1;
+    $taxonomy_default = 3;
 }
 if (!$tag_default) {
     $tag_default = 1;
 }
+
+$taxonomy_id = ($_GET['taxonomy_id'] ? intval($_GET['taxonomy_id']) : $taxonomy_default);
+$tag_id = ($_GET['tag_id'] ? intval($_GET['tag_id']) : $tag_default);
 
 if(isset($_GET['embed'])){
 	$http_host = 'https://'.$_SERVER['HTTP_HOST'];
@@ -69,8 +72,10 @@ var active_tag_label = "<?=$_GET['tag_label']?>";
 
 // var json_url = "/needs_json?parent=<?=urlencode($_GET['parent'])?>&item=<?=urlencode($_GET['item'])?>";
 
-var json_url = "<?=$http_host?>/taxonomy/<?=($_GET['taxonomy_id'] ? intval($_GET['taxonomy_id']) : $taxonomy_default)?>/tag/<?=($_GET['tag_id'] ? intval($_GET['tag_id']) : $tag_default)?>?output=tree&format=json";
+var json_url = "<?=$http_host?>/taxonomy/<?=($taxonomy_id)?>/tag/<?=($tag_id)?>?output=tree&format=json";
+
+var search_url ="<?=$http_host?>/taxonomy/<?=($taxonomy_id)?>/tag/<?=($tag_default)?>/tags?via=select2";
 
 </script>
-<script type="text/javascript" src="<?=$http_host?>/js/taxonomies.js?v1.1"></script>
-<script type="text/javascript" src="<?=$http_host?>/js/taxonomy_browser.js?v1.2"></script>
+<script type="text/javascript" src="<?=$http_host?>/js/taxonomies.js?v2"></script>
+<script type="text/javascript" src="<?=$http_host?>/js/taxonomy_browser.js?v2"></script>

@@ -8,7 +8,7 @@ $(document).ready(function() {
 		var $this_taxonomy_tag = $(this);
 		$this_taxonomy_tag.select2({
 			ajax: {
-				url: http_host+"/tags?via=select2",
+				url: search_url,
 				dataType: 'json',
 				delay: 250,
 				cache: true

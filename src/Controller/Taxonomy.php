@@ -427,9 +427,9 @@ class Taxonomy extends App
         foreach ($tags as $t) {
             // var_dump($under_tag, $t);
             if ($str || !$under_tag || $under_tag==$t['parent_id']) {
-                if (!$str) {
+                if (!$str) { // first
                     $str = $t['label'];
-                } else {
+                } else { // concat
                     $str .= " $separator ".$t['label'];
                 }
             }
@@ -460,5 +460,30 @@ class Taxonomy extends App
         R::store($tag);
 
         return $tag;
+    }
+
+    public function search_tags($term, $limit=50, $page=0)
+    {
+
+        return R::getAll(
+        "select id, label as label
+            from tag
+            where label like concat('%', :search, '%')
+            order by
+            label like concat(:search, '%') desc, -- starts with
+            label like concat('% ', :search) desc, -- full word at end
+            ifnull(nullif(instr(label, concat(' ', :search, ' ')), 0), 99999), -- full word
+            ifnull(nullif(instr(label, concat(', ', :search)), 0), 99999), -- after a comma
+            ifnull(nullif(instr(label, concat('/ ', :search)), 0), 99999), -- after an OR
+            ifnull(nullif(instr(label, concat('& ', :search)), 0), 99999), -- after an AND
+            label
+            LIMIT :offset, :limit
+        ",
+        [
+            ':search' => $term,
+            ':limit' => $limit,
+            ':offset' => $limit*$page,
+        ]
+        );
     }
 }
