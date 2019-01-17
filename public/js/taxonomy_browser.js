@@ -151,7 +151,7 @@ function createVisualization(json) {
 
 		// if(d.depth > 0 && d.height < 2){
 
-		window.location = '?tag_id=' + encodeURIComponent(d.data.id) + '&tag_label=' + encodeURIComponent(d.data.name);
+		window.location = http_host+'?tag_id=' + encodeURIComponent(d.data.id) + '&tag_label=' + encodeURIComponent(d.data.name);
 
 		// } else {
 		// 	path.transition()
@@ -247,7 +247,7 @@ function kp_mouseover(d) {
 			if (typeof val === 'object') {
 				$.each(val, function(key2, val2) {
 					if(key !="Related") items.push("<li class='meta-" + key + "'>" + key + " (" + key2 + "): " + val2 + "</li>");
-					else items.push("<li class='meta-" + key + "'>" + key + ": <a href='?tag_id=" + key2 + "&tag_label=" + val2 + "'>" + val2 + "</a></li>");
+					else items.push("<li class='meta-" + key + "'>" + key + ": <a href="+http_host+"'?tag_id=" + key2 + "&tag_label=" + val2 + "'>" + val2 + "</a></li>");
 				});
 			} else {
 				items.push("<li class='meta-" + key + "'>" + key + ": " + val + "</li>");
@@ -353,7 +353,7 @@ function updateBreadcrumbs(nodeArray) {
 
 	entering.append("a")
 		.attr("xlink:href", function(d) {
-			return '?tag_id=' + encodeURIComponent(d.data.id) + '&tag_label=' + encodeURIComponent(d.data.name);
+			return http_host+'?tag_id=' + encodeURIComponent(d.data.id) + '&tag_label=' + encodeURIComponent(d.data.name);
 		})
 		//		.attr("target", '_blank')
 		.append("svg:text")

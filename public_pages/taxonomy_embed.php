@@ -58,6 +58,7 @@ if(isset($_GET['embed'])) $http_host = 'https://'.$_SERVER['HTTP_HOST'];
 <script type="text/javascript">
 // Hack to make this example display correctly in an iframe
 d3.select(self.frameElement).style("height", "700px");
+var http_host = "<?=$http_host?>";
 var select_id = "<?=$_GET['tag_id']?>";
 var active_tag_id = select_id;
 var active_tag_label = "<?=$_GET['tag_label']?>";

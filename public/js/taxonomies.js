@@ -8,7 +8,7 @@ $(document).ready(function() {
 		var $this_taxonomy_tag = $(this);
 		$this_taxonomy_tag.select2({
 			ajax: {
-				url: "/tags?via=select2",
+				url: http_host+"/tags?via=select2",
 				dataType: 'json',
 				delay: 250,
 				cache: true
@@ -23,7 +23,7 @@ $(document).ready(function() {
 
 	$('.taxonomy_search').on("select2:select", function(e) {
 		tag = $(".taxonomy_search").val();
-		if (tag) window.location = "?tag_id=" + tag;
+		if (tag) window.location = http_host+"?tag_id=" + tag;
 	});
 
 });
