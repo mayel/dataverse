@@ -6,14 +6,14 @@ var container = d3.select('#knowledge_browser').node();
 var container_bounds = container.getBoundingClientRect();
 
 // Dimensions of sunburst.
-var width = container_bounds.width * 0.5;
+var width = container_bounds.width / 2;
 var height = width;
-var radius = Math.min(width, height) / 2;
+var radius = width / 2;
 
 // Breadcrumb dimensions: width, height, spacing, width of tip/tail. 
 var b = {
-	w: container_bounds.width * 0.5,
-	h: 24,
+	w: width,
+	h: 25,
 	s: 2,
 	t: 10
 };
@@ -22,6 +22,10 @@ var color = d3.scaleOrdinal(d3.schemeCategory10);
 
 // Total size of all segments; we set this later, after loading the data.
 var totalSize = 0;
+
+d3.select(self.frameElement).style("height", height+"px"); // Hack to make this example display correctly in an iframe
+
+d3.select('#knowledge_browser').style("height", height+"px");
 
 var vis = d3.select("#knowledge_chart").append("svg:svg")
 	.attr("xmlns", "http://www.w3.org/2000/svg")

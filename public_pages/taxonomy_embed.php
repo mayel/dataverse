@@ -59,8 +59,6 @@ if(isset($_GET['embed'])){
 </div>
 
 <script type="text/javascript">
-// Hack to make this example display correctly in an iframe
-d3.select(self.frameElement).style("height", "700px");
 
 var http_host = "<?=$http_host?>";
 var page_url = "<?=$page_url?>";
