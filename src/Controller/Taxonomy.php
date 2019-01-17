@@ -383,6 +383,7 @@ class Taxonomy extends App
         $tag_tree = $this->taxonomy_get($parent_id, $taxonomy_id, $limit_depth, $separator);
 
         if ($this->output_format == 'json') {
+            header("Access-Control-Allow-Origin: *");
             return $this->json($tag_tree);
         } else {
             echo '<pre>';

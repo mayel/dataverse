@@ -7,6 +7,7 @@ use RedBeanPHP\R;
 class TaxonomyAPI extends Taxonomy
 {
 
+
     /**
     * @Route("/taxonomy/{taxonomy_id}/tag/{parent_id}", name="taxonomy_by_and_tag")
     */
@@ -44,6 +45,7 @@ class TaxonomyAPI extends Taxonomy
     */
     public function search_tags_by_meta_data($type=null, $detail=null, $data=null)
     {
+        header("Access-Control-Allow-Origin: *");
         return $this->json($this->tags_by_meta($type, $detail, $data));
     }
 
@@ -104,6 +106,7 @@ class TaxonomyAPI extends Taxonomy
             $ret->results[] = $r;
         }
 
+        header("Access-Control-Allow-Origin: *");
         return $this->json($ret);
     }
 
