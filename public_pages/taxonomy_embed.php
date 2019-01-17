@@ -6,7 +6,10 @@ if (!$tag_default) {
     $tag_default = 1;
 }
 
-if(isset($_GET['embed'])) $http_host = 'https://'.$_SERVER['HTTP_HOST'];
+if(isset($_GET['embed'])){
+	$http_host = 'https://'.$_SERVER['HTTP_HOST'];
+	$page_url = $http_host . $_SERVER["PHP_SELF"];
+} 
 ?>
 
 <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.6-rc.1/css/select2.min.css" rel="stylesheet" />
@@ -19,7 +22,7 @@ if(isset($_GET['embed'])) $http_host = 'https://'.$_SERVER['HTTP_HOST'];
 
 <div class="form-group"><select id="form_tag" name="s" class="fieldtype-TaxonomyTag field-tag taxonomy_search form-control" data-help="" data-placeholder="Search tag" style="width:100%"><</select></div>
 
-<?=($_GET['tag_id'] && !$http_host ? '<a class="btn btn-info float-right" href="?">Back to top categories</a> ' : '')?>
+<?=($_GET['tag_id'] ? '<a class="btn btn-info float-right" href="<?=$page_url?>?">Back to top categories</a> ' : '')?>
 
 <p>Click on an any of the items to view more detailed sub-categories and tags.</p>
 
@@ -58,7 +61,10 @@ if(isset($_GET['embed'])) $http_host = 'https://'.$_SERVER['HTTP_HOST'];
 <script type="text/javascript">
 // Hack to make this example display correctly in an iframe
 d3.select(self.frameElement).style("height", "700px");
+
 var http_host = "<?=$http_host?>";
+var page_url = "<?=$page_url?>";
+
 var select_id = "<?=$_GET['tag_id']?>";
 var active_tag_id = select_id;
 var active_tag_label = "<?=$_GET['tag_label']?>";

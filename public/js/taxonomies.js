@@ -23,7 +23,7 @@ $(document).ready(function() {
 
 	$('.taxonomy_search').on("select2:select", function(e) {
 		tag = $(".taxonomy_search").val();
-		if (tag) window.location = http_host+"?tag_id=" + tag;
+		if (tag) window.location = page_url+"?tag_id=" + tag;
 	});
 
 });
