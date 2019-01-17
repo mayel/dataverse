@@ -8,7 +8,7 @@ if (!$tag_default) {
 
 if(isset($_GET['embed'])){
 	$http_host = 'https://'.$_SERVER['HTTP_HOST'];
-	$page_url = $http_host . $_SERVER["PHP_SELF"];
+	$page_url = $http_host . parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 } 
 ?>
 
