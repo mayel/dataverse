@@ -10,7 +10,7 @@
 
       <div class='modal-body' style="overflow-y: show;">
         <div class='taxonomy-wrapper'>
-          <iframe id='taxonomy_browse' width='1200' height='1000' frameborder='0' allowfullscreen></iframe>
+          <iframe id='taxonomy_browse' width='100%' height='1000' frameborder='0' allowfullscreen></iframe>
         </div>
       </div>
       <div class='modal-footer'>
@@ -23,7 +23,7 @@
 <script type="text/javascript">
   $('a.taxonomy').click(function() {
     var item = $('select.fieldtype-Tag option:last').val();
-    var src = '/taxonomy_browser';
+    var src = '/taxonomy_browser?iframe';
     $("#taxonomy_browse").attr('src', src);
     $('#taxonomy_modal').modal('show');
     return false;
