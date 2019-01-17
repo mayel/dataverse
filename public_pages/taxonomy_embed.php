@@ -24,7 +24,7 @@ if(isset($_GET['embed'])){
 
 <?=($_GET['tag_id'] ? '<a class="btn btn-info float-right" href="<?=$page_url?>?">Back to top categories</a> ' : '')?>
 
-<p>Click on an any of the items to view more detailed sub-categories and tags.</p>
+<p>You can click on a tag in the wheel to zoom in and browse more subcategories.</p>
 
 <div id="knowledge_browser">
 	<div id="knowledge_left">

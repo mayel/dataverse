@@ -1,5 +1,6 @@
 <?php
 
+header("Access-Control-Allow-Origin: *");
 header("Location: /taxonomy/3/tag/1/tags?".$_SERVER['QUERY_STRING']);
 exit();
 
