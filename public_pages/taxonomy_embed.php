@@ -25,7 +25,7 @@ if(isset($_GET['embed'])){
 
 <div class="form-group"><select id="form_tag" name="s" class="fieldtype-TaxonomyTag field-tag taxonomy_search form-control" data-help="" data-placeholder="Search tag" style="width:100%"><</select></div>
 
-<?=($_GET['tag_id'] ? '<a class="btn btn-info float-right" href="<?=$page_url?>?">Back to top categories</a> ' : '')?>
+<?=($_GET['tag_id'] ? '<a class="btn btn-info float-right" href="'.$page_url.'">Back to top categories</a> ' : '')?>
 
 <p>You can click on a tag in the wheel to zoom in and browse more subcategories.</p>
 
