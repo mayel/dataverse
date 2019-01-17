@@ -1,6 +1,6 @@
 <?php
 $taxonomy_name = "Needs & Resources Taxonomy";
-$taxonomy_default = 2;
+// $taxonomy_default = 2;
 $tag_default = 3;
 
 if(isset($_GET['iframe'])) include_once("taxonomy_browser.php");

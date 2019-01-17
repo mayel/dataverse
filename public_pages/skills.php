@@ -1,7 +1,7 @@
 <?php
-$taxonomy_name = "HAHA Academy Taxonomy";
-$taxonomy_default = 1;
-$tag_default = 2;
+$taxonomy_name = "Needs & Resources Taxonomy";
+// $taxonomy_default = 2;
+$tag_default = 4;
 
 if(isset($_GET['iframe'])) include_once("taxonomy_browser.php");
 elseif(isset($_GET['embed'])) include_once("taxonomy_embed.php");

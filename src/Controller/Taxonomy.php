@@ -366,11 +366,14 @@ class Taxonomy extends App
         // TODO: filter by taxonomy_id
 
         if ($this->output_as=='tree') {
+
+            // echo '<pre>'; var_dump($parent_id, $separator, $limit_depth); exit();
             $tag_tree = $this->tag_tree_list($parent_id, $separator, $limit_depth);
             // echo '<pre>'; print_r($tag_tree); exit();
 
             $tag_tree = $this->tree_deflatten($tag_tree);
-        // echo '<pre>'; print_r($tag_tree); exit();
+            // echo '<pre>'; print_r($tag_tree); exit();
+
         } else {
             $tag_tree = $this->tag_meta($parent_id);
         }

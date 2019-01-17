@@ -353,7 +353,7 @@ function updateBreadcrumbs(nodeArray) {
 
 	entering.append("a")
 		.attr("xlink:href", function(d) {
-			return http_host+'?tag_id=' + encodeURIComponent(d.data.id) + '&tag_label=' + encodeURIComponent(d.data.name);
+			return page_url+'?tag_id=' + encodeURIComponent(d.data.id) + '&tag_label=' + encodeURIComponent(d.data.name);
 		})
 		//		.attr("target", '_blank')
 		.append("svg:text")
