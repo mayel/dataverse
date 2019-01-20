@@ -55,40 +55,57 @@ class Build extends Backend
     }
 
 
+    /**
+    * @Route("/build/questionnaire/new", name="new_questionnaire")
+    */
+    public function questionnaire_new(Request $request)
+    {
+        return $this->questionnaire('new', $request);
+    }
 
     /**
-    * @Route("/build/questionnaire", name="build_questionnaire")
+    * @Route("/build/questionnaire/{questionnaire_id}", name="build_questionnaire")
     */
-    public function questionnaire(Request $request)
+    public function questionnaire($questionnaire_id=null, Request $request)
     {
         $this->admin_auth();
 
         global $sortable;
 
 
-        if (!isset($_GET['new'])) {
-            $this->page_title = "Edit Questionnaire";
+        if ($questionnaire_id !='new') {
 
-            $this->questionnaire_id = $_GET['id'] ? $_GET['id'] : $this->session->get('questionnaire'); // get from session
+            $this->questionnaire_id = 
+                ( $questionnaire_id ? $questionnaire_id : 
+                    ( $_GET['id'] ? $_GET['id'] : 
+                        ( $_GET['questionnaire'] ? $_GET['questionnaire'] : 
+                            $this->session->get('questionnaire')
+                        ))); 
 
             if ($this->questionnaire_id) {
                 $this->questionnaire = $this->questionnaire_get($this->questionnaire_id);
+                $this->page_title = "Edit Questionnaire";
             }
         }
 
-        if (!$this->questionnaire->id) {
-            $this->page_title = "New Questionnaire";
+        // $form_builder = $this->createFormBuilder();
 
+        if (!$this->questionnaire->id) {
+
+            $this->page_title = "New Questionnaire";
             $form_builder = $this->createFormBuilder();
+
+
         } else {
             $this->session->set('questionnaire', $this->questionnaire->id);
 
             $popup = '<script type="text/javascript" src="'.$this->config->home_url.'/embed.js.php?id='.$this->questionnaire->id.'"></script><button onclick="return dataverse_open_form()" type="button">Open Questionnaire</button>';
-            $embed .= '<iframe style="height:500px; width:100%; border: none;" src="'.$this->config->home_url.'/q/'.$this->questionnaire->id.'?embedded&amp;step=1"></iframe>';
+            $embed = '<iframe style="height:500px; width:100%; border: none;" src="'.$this->config->home_url.'/q/'.$this->questionnaire->id.'?embedded&amp;step=1"></iframe>';
 
-            $this->logger->info('.....questionnaire', [$this->questionnaire]);
+            // $this->logger->info('.....questionnaire', [$this->questionnaire]);
 
-            $form_builder = $this->createFormBuilder($this->questionnaire);
+            if(count($_POST)) $form_builder = $this->createFormBuilder();
+            else $form_builder = $this->createFormBuilder($this->questionnaire);
         }
 
 
@@ -116,7 +133,20 @@ class Build extends Backend
                 'attr'=>['placeholder' => 'Continue'],
                                 'required' => false,
 
-            ]);
+            ])
+            ->add('notify_email', TextType::class, [
+                'label' => "Email address to notify",
+                'attr'=>['placeholder' => 'hello@mydata.org'],
+                                'required' => false,
+
+            ])
+            ->add('notify_matrix_channel', TextType::class, [
+                'label' => "Address of a Matrix room to notify",
+                'attr'=>['placeholder' => '!a1b2c3z:matrix.org'],
+                                'required' => false,
+
+            ])
+            ;
 
         if ($this->questionnaire->id) {
             $form_builder->add('embed', TextareaType::class, [
@@ -129,7 +159,6 @@ class Build extends Backend
                     'label' => "Code for popup button (assumes you have jQuery loaded on your page)",
                     'data'=> $popup,
                     'disabled'=> true,
-
                 ]);
 
             $output_code .= '
@@ -184,7 +213,12 @@ class Build extends Backend
 
         $form = $form_builder->getForm();
 
+        // echo 1;
+        // print_r($request);
+
         $form->handleRequest($request);
+
+        // echo 2;
 
         if ($form->isSubmitted()) { //  && $form->isValid()
             $data = $form->getData();
@@ -225,7 +259,7 @@ class Build extends Backend
             $this->session->set('questionnaire', $id);
 
             // redirect somewhere
-            return $this->redirectToRoute('build_question');
+            return $this->redirectToRoute('build_questionnaire');
         }
 
         // display the form

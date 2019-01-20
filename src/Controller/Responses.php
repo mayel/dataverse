@@ -6,101 +6,6 @@ use RedBeanPHP\R;
 
 class Responses extends Admin
 {
-    public function response_value($r)
-    { // get responses from DB, with support for many to many for items with array of data
-
-        $the_response = $r->the_var;
-
-        if (!$the_response) {
-            $the_response = $r->the_num;
-        }
-        if (!$the_response) {
-            $the_response = $r->the_date;
-        }
-        if (!$the_response) {
-            $the_response = $r->the_date_time;
-        }
-        if (!$the_response) {
-            $the_response = $r->the_time;
-        }
-
-        $the_answer_id = $r->answer_id;
-
-        if (!$the_response && $r->answer && $r->answer->id) {
-            $the_response = $r->answer->answer;
-            $the_answer_id = $r->answer->id;
-        }
-
-        if (!$the_response) {
-            // R::bindFunc('read', 'response.the_point', 'asText');
-            $the_response = $r->the_point;
-
-            if ($the_response) {
-                list($lat, $long) = $this->geo_point_to_array($the_response);
-
-                if ($lat) {
-                    $the_response = "<a href='https://www.openstreetmap.org/?mlat=$lat&mlon=$long&zoom=12#layers=M' target='_blank'>$lat, $long</a>";
-                }
-            }
-        }
-
-        // var_dump($the_answer_id, $the_response, $r->question);
-
-        if (is_numeric($the_response) && $r->question && $r->question->answer_type=='TaxonomyTag') { // taxonomy tag
-
-            $this->the_response_tag_id = $the_response;
-
-            $tx = $this->get('Taxonomy');
-            $the_tag = $tx->tag_name_with_ancestors($this->the_response_tag_id, $seperator=' ≫ ');
-
-            if ($the_tag) {
-                $the_response = "<a class='question-".$r->question->question_name."' href='/taxonomies?tag_id=$this->the_response_tag_id' target='_blank'>$the_tag</a>";
-            }
-        }
-
-        if ($this->the_response_tag_id) {
-
-            // echo $this->questionnaire->questionnaire_name." - ".$r->question->question_name;
-
-            if ($r->question->question_name=='tag_new_label') { // new tag
-                $the_response .= $this->response_action_button("/taxonomy/tag/". $this->the_response_tag_id ."/new?format=redirect&label=". urlencode($the_response));
-            }
-
-            if ($this->questionnaire->questionnaire_name=='tag_move') { // delete tag
-
-                if ($this->move_from_tag) {
-                    $the_response .= $this->response_action_button("/taxonomy/tag/". $this->move_from_tag ."/edit?parent_tag=". $this->the_response_tag_id ."&format=redirect", 'warning');
-                    $this->move_from_tag = false;
-                } else {
-                    $this->move_from_tag = $this->the_response_tag_id;
-                }
-            }
-
-            if ($this->questionnaire->questionnaire_name=='tags_relation') { // delete tag
-
-                if ($this->link_tag_1) {
-                    $the_response .= $this->response_action_button("/taxonomy/tag/". $this->link_tag_1 ."/edit?related_tag=". $this->the_response_tag_id ."&format=redirect", 'warning');
-                    $this->link_tag_1 = false;
-                } else {
-                    $this->link_tag_1 = $this->the_response_tag_id;
-                }
-            }
-
-            if ($r->question->question_name=='tag_label_new') { // rename tag
-                $the_response .= $this->response_action_button("/taxonomy/tag/". $this->the_response_tag_id ."/edit?format=redirect&label=". urlencode($the_response), 'danger');
-            }
-
-            if ($this->questionnaire->questionnaire_name=='tag_delete') { // delete tag
-                $the_response .= $this->response_action_button("/taxonomy/tag/". $this->the_response_tag_id ."/delete?format=redirect", 'danger');
-            }
-
-        }
-
-        // $the_response .= " // A: ".$this->the_response_tag_id." T: ".$r->question->answer_type." N: ".$this->questionnaire->questionnaire_name." ID: ".$this->the_response_tag_id." Q: ".$r->question->question_name;
-
-
-        return [$the_answer_id, $the_response];
-    }
 
     public function response_action_button($link, $class='success')
     {
@@ -108,7 +13,7 @@ class Responses extends Admin
         return "<a href='$link' class='btn btn-sm btn-$class pull-right'>Confirm</a>";
     }
 
-    public function responses_browse($questionnaire_id, $page, $sort_by, $sorting, $has_email_field=false, $include_personal_info=true)
+    public function list_respondents_responses($questionnaire_id, $page, $sort_by, $sorting, $has_email_field=false, $include_personal_info=true)
     {
         global $bv;
 
@@ -141,33 +46,8 @@ class Responses extends Admin
 
         if ($people) {
             foreach ($people as $p) {
-                R::bindFunc('read', 'response.the_point', 'asText');
-                $resp_data = R::find('response', ' respondent_id = ?
-              ORDER BY response_ts ASC', [ $p->id ]);
 
-                $pr = [];
-                foreach ($resp_data as $r) {
-                    list($key, $c) = $this->response_value($r);
-
-                    if ($r->question_id) {
-                        if ($c && $this->questions[$r->question_id] && $this->questions[$r->question_id]->question_name && $bv->preload_choices[$this->questions[$r->question_id]->question_name] && $bv->preload_choices[$this->questions[$r->question_id]->question_name][$c]) {
-                            $c = $bv->preload_choices[$this->questions[$r->question_id]->question_name][$c];
-                        }
-
-                        if ($pr[$r->question_id] && !is_array($pr[$r->question_id])) { // first of multiple answers
-                            $first_a = $pr[$r->question_id];
-                            $pr[$r->question_id] = [];
-                            $pr[$r->question_id][] = $first_a;
-                            $pr[$r->question_id][] = $c;
-                        } elseif ($pr[$r->question_id]) { // next multiple answers
-                            $pr[$r->question_id][] = $c;
-                        } else {
-                            $pr[$r->question_id] = $c;
-                        }
-                    }
-                }
-
-                $responses[] = $pr;
+                $responses[] = $this->respondent_responses($p->id);
             }
 
             $paginator  = $this->get('knp_paginator');
@@ -182,16 +62,8 @@ class Responses extends Admin
         }
     }
 
-    /**
-    * @Route("/responses/{questionnaire_id}/{page}/{sort_by}/{sorting}", name="list_responses", requirements={"questionnaire_id"="\w+", "page"="\d+", "sort_by": "[a-zA-Z0-9_]+", "sorting": "asc|desc"})
-    */
-    public function list_responses($questionnaire_id = 1, $page = 1, $sort_by = 'ts_started', $sorting = 'desc', $include_personal_info=false, $include_q_selector=false)
+    public function list_respondents_questions_responses($questionnaire_id = 1, $page = 1, $sort_by = 'ts_started', $sorting = 'desc', $include_personal_info=false)
     {
-        if (!$this->member_auth(false) && !$this->admin_auth(false)) {
-            $this->questionnaire_auth($questionnaire_id, true);
-        }
-
-        $questionnaires_list = $this->questions = $responses = [];
 
         $this->questionnaire = $this->questionnaire_get($questionnaire_id);
         // var_dump($questionnaire_id, $this->questionnaire->id, $this->questionnaire);
@@ -219,15 +91,32 @@ class Responses extends Admin
                 $this->questions[$q->id] = $q;
             }
 
-            $responses = $this->responses_browse($this->questionnaire->id, $page, $sort_by, $sorting, $has_email_field, $include_personal_info);
+            $this->responses = $this->list_respondents_responses($this->questionnaire->id, $page, $sort_by, $sorting, $has_email_field, $include_personal_info);
 
         }
+
+
+        return $this->responses;
+    }
+
+    /**
+    * @Route("/responses/{questionnaire_id}/{page}/{sort_by}/{sorting}", name="list_responses", requirements={"questionnaire_id"="\w+", "page"="\d+", "sort_by": "[a-zA-Z0-9_]+", "sorting": "asc|desc"})
+    */
+    public function list_responses($questionnaire_id = 1, $page = 1, $sort_by = 'ts_started', $sorting = 'desc', $include_personal_info=false, $include_q_selector=false)
+    {
+        if (!$this->member_auth(false) && !$this->admin_auth(false)) {
+            $this->questionnaire_auth($questionnaire_id, true);
+        }
+
+        $questionnaires_list = $this->questions = $responses = [];
+
+        $this->list_respondents_questions_responses($questionnaire_id, $page, $sort_by, $sorting, $include_personal_info);
 
         if($include_q_selector) $questionnaires_list = $this->questionnaires();
 
         return $this->render('admin/table-responses.html.twig', array(
             'cols' => $this->questions,
-            'items' => $responses,
+            'items' => $this->responses,
             'pagination' => $this->pagination,
             'questionnaire_id' => $this->questionnaire->id,
             'questionnaire_name' => $this->questionnaire->questionnaire_name,

@@ -9,14 +9,14 @@
       <h1>{{ title|e }}</h1>
 
       <p>
-        <a href="/build/questionnaire?new" class="btn btn-info">New Questionnaire</a>
+        <a href="/build/questionnaire/new" class="btn btn-info">New Questionnaire</a>
       </p>
 
       {% include 'build/q_nav.html.twig' with {'questionnaires_list': questionnaires_list, 'q_nav_url': '/admin/responses/'} %}
 
       {% include 'build/q_nav.html.twig' with {'questionnaires_list': questionnaires_list, 'q_nav_url': '/q/', 'q_nav_title' : 'View Questionnaire'} %}
 
-      {% include 'build/q_nav.html.twig' with {'questionnaires_list': questionnaires_list, 'q_nav_url': '/build/questionnaire?id=', 'q_nav_title' : 'Edit Questionnaire'} %}
+      {% include 'build/q_nav.html.twig' with {'questionnaires_list': questionnaires_list, 'q_nav_url': '/build/questionnaire/', 'q_nav_title' : 'Edit Questionnaire'} %}
 
 
 

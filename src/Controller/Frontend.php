@@ -439,4 +439,178 @@ class Frontend extends App
         preg_match('/([0-9.-]+).+?([0-9.-]+)/', $point_from_db, $matches);
         return [ (float)$matches[1], (float)$matches[2] ]; // lat/long
     }
+
+    public function response_value($r)
+    { // get responses from DB, with support for many to many for items with array of data
+
+        $the_response = $r->the_var;
+
+        if (!$the_response) {
+            $the_response = $r->the_num;
+        }
+        if (!$the_response) {
+            $the_response = $r->the_date;
+        }
+        if (!$the_response) {
+            $the_response = $r->the_date_time;
+        }
+        if (!$the_response) {
+            $the_response = $r->the_time;
+        }
+
+        $the_answer_id = $r->answer_id;
+
+        if (!$the_response && $r->answer && $r->answer->id) {
+            $the_response = $r->answer->answer;
+            $the_answer_id = $r->answer->id;
+        }
+
+        if (!$the_response) {
+            // R::bindFunc('read', 'response.the_point', 'asText');
+            $the_response = $r->the_point;
+
+            if ($the_response) {
+                list($lat, $long) = $this->geo_point_to_array($the_response);
+
+                if ($lat) {
+                    $the_response = "<a href='https://www.openstreetmap.org/?mlat=$lat&mlon=$long&zoom=12#layers=M' target='_blank'>$lat, $long</a>";
+                }
+            }
+        }
+
+        // var_dump($the_answer_id, $the_response, $r->question);
+
+        if (is_numeric($the_response) && $r->question && $r->question->answer_type=='TaxonomyTag') { // taxonomy tag
+
+            $this->the_response_tag_id = $the_response;
+
+            $tx = $this->get('Taxonomy');
+            $the_tag = $tx->tag_name_with_ancestors($this->the_response_tag_id, $seperator=' ≫ ');
+
+            if ($the_tag) {
+                $the_response = "<a class='question-".$r->question->question_name."' href='/taxonomies?tag_id=$this->the_response_tag_id' target='_blank'>$the_tag</a>";
+            }
+        }
+
+        if ($this->the_response_tag_id) {
+
+            // echo $this->questionnaire->questionnaire_name." - ".$r->question->question_name;
+
+            if ($r->question->question_name=='tag_new_label') { // new tag
+                $the_response .= $this->response_action_button("/taxonomy/tag/". $this->the_response_tag_id ."/new?format=redirect&label=". urlencode($the_response));
+            }
+
+            if ($this->questionnaire->questionnaire_name=='tag_move') { // delete tag
+
+                if ($this->move_from_tag) {
+                    $the_response .= $this->response_action_button("/taxonomy/tag/". $this->move_from_tag ."/edit?parent_tag=". $this->the_response_tag_id ."&format=redirect", 'warning');
+                    $this->move_from_tag = false;
+                } else {
+                    $this->move_from_tag = $this->the_response_tag_id;
+                }
+            }
+
+            if ($this->questionnaire->questionnaire_name=='tags_relation') { // delete tag
+
+                if ($this->link_tag_1) {
+                    $the_response .= $this->response_action_button("/taxonomy/tag/". $this->link_tag_1 ."/edit?related_tag=". $this->the_response_tag_id ."&format=redirect", 'warning');
+                    $this->link_tag_1 = false;
+                } else {
+                    $this->link_tag_1 = $this->the_response_tag_id;
+                }
+            }
+
+            if ($r->question->question_name=='tag_label_new') { // rename tag
+                $the_response .= $this->response_action_button("/taxonomy/tag/". $this->the_response_tag_id ."/edit?format=redirect&label=". urlencode($the_response), 'danger');
+            }
+
+            if ($this->questionnaire->questionnaire_name=='tag_delete') { // delete tag
+                $the_response .= $this->response_action_button("/taxonomy/tag/". $this->the_response_tag_id ."/delete?format=redirect", 'danger');
+            }
+
+        }
+
+        // $the_response .= " // A: ".$this->the_response_tag_id." T: ".$r->question->answer_type." N: ".$this->questionnaire->questionnaire_name." ID: ".$this->the_response_tag_id." Q: ".$r->question->question_name;
+
+
+        return [$the_answer_id, $the_response];
+    }
+
+    public function response_action_button($link, $class='success')
+    {
+        $this->the_response_tag_id = false;
+        // return "<a href='$link' class='btn btn-sm btn-$class pull-right'>Confirm</a>";
+    }
+
+
+    public function respondent_responses($respondent_id){
+        global $bv;
+
+        R::bindFunc('read', 'response.the_point', 'asText');
+
+        $resp_data = R::find('response', ' respondent_id = ?
+        ORDER BY response_ts ASC', [ $respondent_id ]);
+        // var_dump($resp_data);
+
+        $pr = [];
+        foreach ($resp_data as $r) {
+            list($key, $c) = $this->response_value($r);
+
+            if ($r->question_id) {
+                
+                if ($c && $this->questions[$r->question_id] && $this->questions[$r->question_id]->question_name && $bv->preload_choices[$this->questions[$r->question_id]->question_name] && $bv->preload_choices[$this->questions[$r->question_id]->question_name][$c]) {
+                    $c = $bv->preload_choices[$this->questions[$r->question_id]->question_name][$c];
+                }
+
+                if ($pr[$r->question_id] && !is_array($pr[$r->question_id])) { // first of multiple answers
+                    $first_a = $pr[$r->question_id];
+                    $pr[$r->question_id] = [];
+                    $pr[$r->question_id][] = $first_a;
+                    $pr[$r->question_id][] = $c;
+                } elseif ($pr[$r->question_id]) { // next multiple answers
+                    $pr[$r->question_id][] = $c;
+                } else {
+                    $pr[$r->question_id] = $c;
+                }
+            }
+        }
+
+        return $pr;
+    }
+
+    public function combine_responses_with_question_names($questionnaire_id, $responses=[], $include_personal_info=false){
+
+        $questions = $this->questionnaire_questions($questionnaire_id); // load all questions
+
+        foreach ($questions as $q) {
+            if ($q->answer_type=='Email') {
+                $has_email_field = true;
+            }
+
+            // if ($q->answer_type=='Include') {
+            //     @include_once($this->conf->base_path.'public_pages/'.$q->question_name);
+            // }
+
+            if (in_array($q->answer_type, ['Notice','Include','Password'])) {
+                continue;
+            }
+            if (!$include_personal_info && in_array($q->answer_type, ['Email','Phone'])) {
+                continue;
+            }
+
+            $this->question_details[$q->id] = $q;
+
+            if($responses[$q->id]) $r[$q->question_text] = $responses[$q->id];
+        }
+
+        return $r;
+    }
+
+    public function array_to_plaintext($ar=[]){
+        if(is_array($ar)) foreach($ar as $a => $b){
+            $t .= "$a: $b  \n";
+        }
+        return $t;
+    }
+
 }

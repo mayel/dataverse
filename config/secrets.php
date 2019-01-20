@@ -47,3 +47,7 @@ $bv->config->bot = [
 
 $bv->config->bot_verify = 'SECRET_VERIFY_PHRASE';
 $bv->config->bot_url = 'bot'; // path
+
+$bv->config->matrix = new class{};
+$bv->config->matrix->homeserver="matrix.org"; // bot user's server
+// $bv->config->matrix->accesstoken="xyz"; // access token of bot user - TODO: does this expire?

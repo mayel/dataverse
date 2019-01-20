@@ -64,6 +64,7 @@ class Form extends Frontend
     */
     public function question($questionnaire_id=null, Request $request)
     {
+        global $bv;
 
         // some default data for when the form is displayed the first time
         $data = array(
@@ -121,9 +122,11 @@ class Form extends Frontend
         // $this->question_id = ($_GET['id'] ? $_GET['id'] : $this->session->get('current_question')); // get from session
         $this->question_id = $_GET['id'];
 
-        if ($this->question_id) {
+        if ($this->question_id) { 
+            
             $this->questions[0] = $this->data_by_id('question', intval($this->question_id));
-        } else { // forward
+
+        } else { // go forward
 
             if (is_numeric($_GET['after'])) {
                 
@@ -158,6 +161,56 @@ class Form extends Frontend
         if (!$this->questions || !count($this->questions)) {
             // $this->questions = $this->questionnaire_questions($this->questionnaire->id); // fallback to load all questions
             // return $this->redirect('/thankyou');
+
+            if ($this->questionnaire->notify_email || $this->questionnaire->notify_matrix_channel) {
+                // echo 'Notify message... ';
+
+                $resp = $this->respondent_responses($this->respondent_id);
+
+                if($resp) $notify_msg = ($this->array_to_plaintext($this->combine_responses_with_question_names($this->questionnaire_id, $resp)));
+
+
+                if($notify_msg && $this->questionnaire->notify_email && function_exists('mail')){
+
+                    mail ( $this->questionnaire->notify_email , "New entry - " . $this->questionnaire->questionnaire_title , $notify_msg );
+
+                }
+
+
+                // if($notify_msg && file_exists($this->conf->base_path.'custom/matrix_post.sh')){
+                //     // echo "Send";
+                //     $notify_msg = escapeshellarg($notify_msg);
+                //     // escape the others
+                //     $output = exec("echo $notify_msg | {$this->conf->base_path}custom/matrix_post.sh");
+                // } 
+
+                if($notify_msg && $this->questionnaire->notify_matrix_channel && $bv->config->matrix->accesstoken && function_exists('curl_exec')){
+
+                    $notify_msg = "New entry - " . $this->questionnaire->questionnaire_title . "\n" . $notify_msg;
+                    
+                    $room = $this->questionnaire->notify_matrix_channel; // room ID from channel settings
+
+                    $homeserver = $bv->config->matrix->homeserver; // bot user's server
+                    $accesstoken = $bv->config->matrix->accesstoken; // access token of bot user - TODO: does this expire?
+
+                    $ch = curl_init( "https://$homeserver/_matrix/client/r0/rooms/$room/send/m.room.message?access_token=$accesstoken" );
+
+                    # Setup request to send json via POST.
+                    curl_setopt( $ch, CURLOPT_HTTPHEADER, array('Content-Type:application/json'));
+                    $payload = json_encode( array( "msgtype"=> "m.text", "body"=> $notify_msg ) ); // {"msgtype":"m.text","body":"Test\n"}
+                    curl_setopt( $ch, CURLOPT_POSTFIELDS, $payload );
+
+                    # Return response instead of printing.
+                    curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
+
+                    # Send request.
+                    $result = curl_exec($ch);
+                    curl_close($ch);
+
+                    # Print response.
+                    error_log($result);
+                }
+            }
 
             if ($this->questionnaire->do_not_review) {
                 $back_label = 'Start again with new answers';
