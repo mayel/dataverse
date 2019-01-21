@@ -641,11 +641,12 @@ class Form extends Frontend
                 break;
             case "URL":
 
-                if (!$this->field_value) {
-                    $this->field_value = 'http://';
-                }
+                // if (!$this->field_value) {
+                //     $this->field_value = 'http://';
+                // }
 
                 $form_builder->add($this->field_name, URLType::class, $this->field_params([
+                    'placeholder' => 'http://',
                 ]));
 
                 break;
