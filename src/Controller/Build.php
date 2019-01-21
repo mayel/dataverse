@@ -383,7 +383,7 @@ class Build extends Backend
                     'required'	  => false,
                 ])
                 ->add('skip_allowed', CheckboxType::class, [
-                    'label' => "This question should not be skipped",
+                    'label' => "This question can be skipped",
                     'required'	  => false,
                     'data' => false
                 ])
