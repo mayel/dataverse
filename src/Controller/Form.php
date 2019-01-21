@@ -646,7 +646,7 @@ class Form extends Frontend
                 // }
 
                 $form_builder->add($this->field_name, URLType::class, $this->field_params([
-                    'placeholder' => 'http://',
+                    // 'placeholder' => 'http://',
                 ]));
 
                 break;
